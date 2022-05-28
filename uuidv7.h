@@ -16,6 +16,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * @version 0.1.0
  */
 #ifndef UUIDV7_H_BAEDKYFQ
 #define UUIDV7_H_BAEDKYFQ
@@ -75,11 +77,13 @@ extern "C" {
  * integrating a real-time clock, cryptographically strong random number
  * generator, and shared state storage available in the target platform.
  *
- * @param uuid_out 16-byte byte array where the generated UUID is stored.
- * @return One of the `UUIDV7_STATUS_*` codes that describe the characteristics
- * of generated UUIDs or an implementation-dependent error code. Callers can
- * usually ignore the `UUIDV7_STATUS_*` code unless they need to guarantee the
- * monotonic order of UUIDs or fine-tune the generation process.
+ * @param uuid_out  16-byte byte array where the generated UUID is stored.
+ * @return          One of the `UUIDV7_STATUS_*` codes that describe the
+ *                  characteristics of generated UUIDs or an
+ *                  implementation-dependent error code.  Callers can usually
+ *                  ignore the `UUIDV7_STATUS_*` code unless they need to
+ *                  guarantee the monotonic order of UUIDs or fine-tune the
+ *                  generation process.
  */
 int uuidv7_new(uint8_t *uuid_out);
 
@@ -87,20 +91,24 @@ int uuidv7_new(uint8_t *uuid_out);
  * Generates a new UUIDv7 with the given Unix time, random number generator, and
  * previous UUID.
  *
- * @param uuid_out 16-byte byte array where the generated UUID is stored.
- * @param unix_ts_ms Current Unix time in milliseconds.
- * @param rand_bytes At least 10-byte byte array filled with random bytes. This
- * function consumes the leading 4 bytes or the whole 10 bytes per call
- * depending on the conditions. `uuidv7_status_n_rand_consumed()` maps the
- * return value of this function to the number of random bytes consumed.
- * @param uuid_prev 16-byte byte array representing the immediately preceding
- * UUID, from which the previous timestamp and counter are extracted. This may
- * be NULL if the caller does not care the ascending order of UUIDs within the
- * same timestamp. This may point to the same location as `uuid_out`; this
- * function reads the value before writing.
- * @return One of the `UUIDV7_STATUS_*` codes that describe the characteristics
- * of generated UUIDs. Callers can usually ignore the status unless they need to
- * guarantee the monotonic order of UUIDs or fine-tune the generation process.
+ * @param uuid_out    16-byte byte array where the generated UUID is stored.
+ * @param unix_ts_ms  Current Unix time in milliseconds.
+ * @param rand_bytes  At least 10-byte byte array filled with random bytes. This
+ *                    function consumes the leading 4 bytes or the whole 10
+ *                    bytes per call depending on the conditions.
+ *                    `uuidv7_status_n_rand_consumed()` maps the return value of
+ *                    this function to the number of random bytes consumed.
+ * @param uuid_prev   16-byte byte array representing the immediately preceding
+ *                    UUID, from which the previous timestamp and counter are
+ *                    extracted. This may be NULL if the caller does not care
+ *                    the ascending order of UUIDs within the same timestamp.
+ *                    This may point to the same location as `uuid_out`; this
+ *                    function reads the value before writing.
+ * @return            One of the `UUIDV7_STATUS_*` codes that describe the
+ *                    characteristics of generated UUIDs. Callers can usually
+ *                    ignore the status unless they need to guarantee the
+ *                    monotonic order of UUIDs or fine-tune the generation
+ *                    process.
  */
 int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
                        const uint8_t *rand_bytes, const uint8_t *uuid_prev) {
@@ -170,9 +178,9 @@ int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
 /**
  * Encodes a UUID in the 8-4-4-4-12 hexadecimal string representation.
  *
- * @param uuid 16-byte byte array representing the UUID to encode.
- * @param string_out Character array where the encoded string is stored. Its
- * length must be 37 (36 digits + NUL) or longer.
+ * @param uuid        16-byte byte array representing the UUID to encode.
+ * @param string_out  Character array where the encoded string is stored. Its
+ *                    length must be 37 (36 digits + NUL) or longer.
  */
 void uuidv7_to_string(const uint8_t *uuid, char *string_out) {
   static const char DIGITS[] = "0123456789abcdef";
@@ -191,8 +199,9 @@ void uuidv7_to_string(const uint8_t *uuid, char *string_out) {
  * Determines the number of random bytes consumsed by `uuidv7_generate()` from
  * the `UUIDV7_STATUS_*` code returned.
  *
- * @param status `UUIDV7_STATUS_*` code returned by `uuidv7_generate()`.
- * @return `4` if `status` is `UUIDV7_STATUS_COUNTER_INC` or `10` otherwise.
+ * @param status  `UUIDV7_STATUS_*` code returned by `uuidv7_generate()`.
+ * @return        `4` if `status` is `UUIDV7_STATUS_COUNTER_INC` or `10`
+ *                otherwise.
  */
 int uuidv7_status_n_rand_consumed(int8_t status) {
   return status == UUIDV7_STATUS_COUNTER_INC ? 4 : 10;

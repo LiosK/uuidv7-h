@@ -72,3 +72,79 @@ int uuidv7_new(uint8_t *uuid_out) {
   return status;
 }
 ```
+
+See [draft-peabody-dispatch-new-uuid-format-03](https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-03.html).
+
+## Primary function
+
+```c
+/**
+ * Generates a new UUIDv7 with the given Unix time, random number generator, and
+ * previous UUID.
+ *
+ * @param uuid_out    16-byte byte array where the generated UUID is stored.
+ * @param unix_ts_ms  Current Unix time in milliseconds.
+ * @param rand_bytes  At least 10-byte byte array filled with random bytes. This
+ *                    function consumes the leading 4 bytes or the whole 10
+ *                    bytes per call depending on the conditions.
+ *                    `uuidv7_status_n_rand_consumed()` maps the return value of
+ *                    this function to the number of random bytes consumed.
+ * @param uuid_prev   16-byte byte array representing the immediately preceding
+ *                    UUID, from which the previous timestamp and counter are
+ *                    extracted. This may be NULL if the caller does not care
+ *                    the ascending order of UUIDs within the same timestamp.
+ *                    This may point to the same location as `uuid_out`; this
+ *                    function reads the value before writing.
+ * @return            One of the `UUIDV7_STATUS_*` codes that describe the
+ *                    characteristics of generated UUIDs. Callers can usually
+ *                    ignore the status unless they need to guarantee the
+ *                    monotonic order of UUIDs or fine-tune the generation
+ *                    process.
+ */
+int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
+                       const uint8_t *rand_bytes, const uint8_t *uuid_prev);
+```
+
+## Field and bit layout
+
+This implementation produces identifiers with the following bit layout:
+
+```text
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          unix_ts_ms                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          unix_ts_ms           |  ver  |        counter        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|var|                        counter                            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             rand                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+Where:
+
+- The 48-bit `unix_ts_ms` field is dedicated to the Unix timestamp in
+  milliseconds.
+- The 4-bit `ver` field is set at `0111`.
+- The 42-bit `counter` field accommodates the sequence counter that ensures the
+  monotonic order of IDs generated within the same millisecond. The counter is
+  incremented by one for each new ID generated within the same timestamp and is
+  randomly initialized whenever the `unix_ts_ms` changes. The `counter` is
+  filled with a random number if `NULL` is passed as `uuid_prev` parameter.
+- The 2-bit `var` field is set at `10`.
+- The remaining 32 `rand` bits are filled with a random number.
+
+In the rare circumstances where the 42-bit `counter` field reaches its maximum
+value, this library increments the `unix_ts_ms` ahead of the actual time;
+therefore, the `unix_ts_ms` may have a larger value than that of the real-time
+clock. This library goes on with such larger `unix_ts_ms` values caused by
+counter overflows and system clock rollbacks as long as the difference from the
+system clock is small enough. If the system clock moves back by more than ten
+seconds, this library ignores the timestamp and counter embedded in the
+`uuid_prev` and thus breaks the monotonic order of generated identifiers.
+
+## License
+
+Licensed under the Apache License, Version 2.0.
