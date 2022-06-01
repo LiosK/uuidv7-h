@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @version 0.1.0
+ * @version 0.1.1
  */
 #ifndef UUIDV7_H_BAEDKYFQ
 #define UUIDV7_H_BAEDKYFQ
@@ -80,16 +80,17 @@ extern "C" {
  * @param uuid_out  16-byte byte array where the generated UUID is stored.
  * @return          One of the `UUIDV7_STATUS_*` codes that describe the
  *                  characteristics of generated UUIDs or an
- *                  implementation-dependent error code.  Callers can usually
- *                  ignore the `UUIDV7_STATUS_*` code unless they need to
- *                  guarantee the monotonic order of UUIDs or fine-tune the
- *                  generation process.
+ *                  implementation-dependent code. Callers can usually ignore
+ *                  the `UUIDV7_STATUS_*` code unless they need to guarantee the
+ *                  monotonic order of UUIDs or fine-tune the generation
+ *                  process. The implementation-dependent code should be out of
+ *                  the range of `int8_t` and negative if it reports an error.
  */
 int uuidv7_new(uint8_t *uuid_out);
 
 /**
- * Generates a new UUIDv7 with the given Unix time, random number generator, and
- * previous UUID.
+ * Generates a new UUIDv7 with the given Unix time, random bytes, and previous
+ * UUID.
  *
  * @param uuid_out    16-byte byte array where the generated UUID is stored.
  * @param unix_ts_ms  Current Unix time in milliseconds.
@@ -110,8 +111,9 @@ int uuidv7_new(uint8_t *uuid_out);
  *                    monotonic order of UUIDs or fine-tune the generation
  *                    process.
  */
-int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
-                       const uint8_t *rand_bytes, const uint8_t *uuid_prev) {
+static inline int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
+                                     const uint8_t *rand_bytes,
+                                     const uint8_t *uuid_prev) {
   if (unix_ts_ms > 0xffffffffffff) {
     return UUIDV7_STATUS_ERR_TIMESTAMP;
   }
@@ -182,7 +184,7 @@ int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
  * @param string_out  Character array where the encoded string is stored. Its
  *                    length must be 37 (36 digits + NUL) or longer.
  */
-void uuidv7_to_string(const uint8_t *uuid, char *string_out) {
+static inline void uuidv7_to_string(const uint8_t *uuid, char *string_out) {
   static const char DIGITS[] = "0123456789abcdef";
   for (int i = 0; i < 16; i++) {
     uint_fast8_t e = uuid[i];
@@ -203,7 +205,7 @@ void uuidv7_to_string(const uint8_t *uuid, char *string_out) {
  * @return        `4` if `status` is `UUIDV7_STATUS_COUNTER_INC` or `10`
  *                otherwise.
  */
-int uuidv7_status_n_rand_consumed(int8_t status) {
+static inline int uuidv7_status_n_rand_consumed(int8_t status) {
   return status == UUIDV7_STATUS_COUNTER_INC ? 4 : 10;
 }
 

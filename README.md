@@ -79,8 +79,8 @@ See [draft-peabody-dispatch-new-uuid-format-03](https://www.ietf.org/archive/id/
 
 ```c
 /**
- * Generates a new UUIDv7 with the given Unix time, random number generator, and
- * previous UUID.
+ * Generates a new UUIDv7 with the given Unix time, random bytes, and previous
+ * UUID.
  *
  * @param uuid_out    16-byte byte array where the generated UUID is stored.
  * @param unix_ts_ms  Current Unix time in milliseconds.
@@ -101,8 +101,9 @@ See [draft-peabody-dispatch-new-uuid-format-03](https://www.ietf.org/archive/id/
  *                    monotonic order of UUIDs or fine-tune the generation
  *                    process.
  */
-int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
-                       const uint8_t *rand_bytes, const uint8_t *uuid_prev);
+static inline int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
+                                     const uint8_t *rand_bytes,
+                                     const uint8_t *uuid_prev);
 ```
 
 ## Field and bit layout
