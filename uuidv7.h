@@ -1,29 +1,39 @@
 /**
- * @file uuidv7.h Single-file C/C++ UUIDv7 Library
+ * @file
  *
- * Repository: https://github.com/LiosK/uuidv7-h
+ * uuidv7.h - Single-file C/C++ UUIDv7 Library
  *
+ * @version   0.1.2
+ * @author    LiosK
+ * @copyright Licensed under the Apache License, Version 2.0
+ * @see       https://github.com/LiosK/uuidv7-h
+ */
+/*
  * Copyright 2022 LiosK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * @version 0.1.1
  */
 #ifndef UUIDV7_H_BAEDKYFQ
 #define UUIDV7_H_BAEDKYFQ
 
 #include <stddef.h>
 #include <stdint.h>
+
+/**
+ * @name UUIDV7_STATUS_* code definitions
+ *
+ * @{
+ */
 
 /**
  * Status code returned by `uuidv7_generate()`, indicating that the `unix_ts_ms`
@@ -63,33 +73,20 @@
  */
 #define UUIDV7_STATUS_ERR_TIMESTAMP (-1)
 
+/** @} */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * Generates a new UUIDv7 with the current Unix time.
+ * @name Low-level primitives
  *
- * This declaration suggests a recommended interface to generate a new UUIDv7
- * with the current time, default random number generator, and global shared
- * state holding the previously generated UUID. Users of this single-file
- * library need to prepare a concrete implementation (if necessary) by
- * integrating a real-time clock, cryptographically strong random number
- * generator, and shared state storage available in the target platform.
- *
- * @param uuid_out  16-byte byte array where the generated UUID is stored.
- * @return          One of the `UUIDV7_STATUS_*` codes that describe the
- *                  characteristics of generated UUIDs or an
- *                  implementation-dependent code. Callers can usually ignore
- *                  the `UUIDV7_STATUS_*` code unless they need to guarantee the
- *                  monotonic order of UUIDs or fine-tune the generation
- *                  process. The implementation-dependent code should be out of
- *                  the range of `int8_t` and negative if it reports an error.
+ * @{
  */
-int uuidv7_new(uint8_t *uuid_out);
 
 /**
- * Generates a new UUIDv7 with the given Unix time, random bytes, and previous
+ * Generates a new UUIDv7 from the given Unix time, random bytes, and previous
  * UUID.
  *
  * @param uuid_out    16-byte byte array where the generated UUID is stored.
@@ -208,6 +205,54 @@ static inline void uuidv7_to_string(const uint8_t *uuid, char *string_out) {
 static inline int uuidv7_status_n_rand_consumed(int8_t status) {
   return status == UUIDV7_STATUS_COUNTER_INC ? 4 : 10;
 }
+
+/** @} */
+
+/**
+ * @name High-level APIs that require platform integration
+ *
+ * @{
+ */
+
+/**
+ * Generates a new UUIDv7 with the current Unix time.
+ *
+ * This declaration defines the interface to generate a new UUIDv7 with the
+ * current time, default random number generator, and global shared state
+ * holding the previously generated UUID. Since this single-file library does
+ * not provide platform-specific implementations, users need to prepare a
+ * concrete implementation (if necessary) by integrating a real-time clock,
+ * cryptographically strong random number generator, and shared state storage
+ * available in the target platform.
+ *
+ * @param uuid_out  16-byte byte array where the generated UUID is stored.
+ * @return          One of the `UUIDV7_STATUS_*` codes that describe the
+ *                  characteristics of generated UUIDs or an
+ *                  implementation-dependent code. Callers can usually ignore
+ *                  the `UUIDV7_STATUS_*` code unless they need to guarantee the
+ *                  monotonic order of UUIDs or fine-tune the generation
+ *                  process. The implementation-dependent code should be out of
+ *                  the range of `int8_t` and negative if it reports an error.
+ */
+int uuidv7_new(uint8_t *uuid_out);
+
+/**
+ * Generates an 8-4-4-4-12 hexadecimal string representation of new UUIDv7.
+ *
+ * @param string_out  Character array where the encoded string is stored. Its
+ *                    length must be 37 (36 digits + NUL) or longer.
+ * @return            Return value of `uuidv7_new()`.
+ * @note              Provide a concrete `uuidv7_new()` implementation to enable
+ *                    this function.
+ */
+static inline int uuidv7_new_string(char *string_out) {
+  uint8_t uuid[16];
+  int result = uuidv7_new(uuid);
+  uuidv7_to_string(uuid, string_out);
+  return result;
+}
+
+/** @} */
 
 #ifdef __cplusplus
 } /* extern "C" { */

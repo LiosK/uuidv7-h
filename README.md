@@ -31,18 +31,17 @@ int main(void) {
 
   int status = uuidv7_generate(uuid, unix_ts_ms, rand_bytes, uuid);
   if (status == UUIDV7_STATUS_CLOCK_ROLLBACK)
-    return 1; // clock moved backward by more than 10 seconds
+    return 1; // error: clock moved backward by more than 10 seconds
   uuidv7_to_string(uuid, text);
   printf("%s\n", text);
 
-  // use user-defined `uuidv7_new()` function
+  // use high-level APIs that require concrete `uuidv7_new()` implementation
   for (int i = 0; i < 8; i++) {
-    uuidv7_new(uuid);
-    uuidv7_to_string(uuid, text);
+    uuidv7_new_string(text);
     printf("%s\n", text);
   }
 
-  return 0;
+  return 0; // success
 }
 
 /**
@@ -79,7 +78,7 @@ See [draft-peabody-dispatch-new-uuid-format-03](https://www.ietf.org/archive/id/
 
 ```c
 /**
- * Generates a new UUIDv7 with the given Unix time, random bytes, and previous
+ * Generates a new UUIDv7 from the given Unix time, random bytes, and previous
  * UUID.
  *
  * @param uuid_out    16-byte byte array where the generated UUID is stored.
