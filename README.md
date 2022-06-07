@@ -6,20 +6,26 @@ Examples:
 #include "uuidv7.h"
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <sys/random.h>
 #include <time.h>
 
 int main(void) {
-  // generate a UUIDv7 with the current Unix time
+  // use high-level APIs that require concrete `uuidv7_new()` implementation
+  char text[37];
+  for (int i = 0; i < 8; i++) {
+    uuidv7_new_string(text);
+    printf("%s\n", text);
+  }
+
+  // generate a UUIDv7 with the current Unix time using the low-level APIs
   struct timespec tp;
   clock_gettime(CLOCK_REALTIME, &tp);
   uint64_t unix_ts_ms = (uint64_t)tp.tv_sec * 1000 + tp.tv_nsec / 1000000;
 
   uint8_t rand_bytes[10];
-  arc4random_buf(rand_bytes, 10);
+  getentropy(rand_bytes, 10);
 
   uint8_t uuid[16];
-  char text[37];
   uuidv7_generate(uuid, unix_ts_ms, rand_bytes, NULL);
   uuidv7_to_string(uuid, text);
   printf("%s\n", text);
@@ -27,19 +33,13 @@ int main(void) {
   // generate another while guaranteeing ascending order of UUIDs
   clock_gettime(CLOCK_REALTIME, &tp);
   unix_ts_ms = (uint64_t)tp.tv_sec * 1000 + tp.tv_nsec / 1000000;
-  arc4random_buf(rand_bytes, 10);
+  getentropy(rand_bytes, 10);
 
   int status = uuidv7_generate(uuid, unix_ts_ms, rand_bytes, uuid);
   if (status == UUIDV7_STATUS_CLOCK_ROLLBACK)
     return 1; // error: clock moved backward by more than 10 seconds
   uuidv7_to_string(uuid, text);
   printf("%s\n", text);
-
-  // use high-level APIs that require concrete `uuidv7_new()` implementation
-  for (int i = 0; i < 8; i++) {
-    uuidv7_new_string(text);
-    printf("%s\n", text);
-  }
 
   return 0; // success
 }
@@ -62,7 +62,7 @@ int uuidv7_new(uint8_t *uuid_out) {
   clock_gettime(CLOCK_REALTIME, &tp);
   uint64_t unix_ts_ms = (uint64_t)tp.tv_sec * 1000 + tp.tv_nsec / 1000000;
 
-  arc4random_buf(rand_bytes, n_rand_consumed);
+  getentropy(rand_bytes, n_rand_consumed);
   int8_t status = uuidv7_generate(uuid_prev, unix_ts_ms, rand_bytes, uuid_prev);
   n_rand_consumed = uuidv7_status_n_rand_consumed(status);
 

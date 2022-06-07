@@ -3,7 +3,7 @@
  *
  * uuidv7.h - Single-file C/C++ UUIDv7 Library
  *
- * @version   0.1.2
+ * @version   v0.1.3
  * @author    LiosK
  * @copyright Licensed under the Apache License, Version 2.0
  * @see       https://github.com/LiosK/uuidv7-h
@@ -30,48 +30,49 @@
 #include <stdint.h>
 
 /**
- * @name UUIDV7_STATUS_* code definitions
+ * @name Status codes returned by uuidv7_generate()
  *
  * @{
  */
 
 /**
- * Status code returned by `uuidv7_generate()`, indicating that the `unix_ts_ms`
- * passed was used because no preceding UUID was specified.
+ * Indicates that the `unix_ts_ms` passed was used because no preceding UUID was
+ * specified.
  */
 #define UUIDV7_STATUS_UNPRECEDENTED (0)
 
 /**
- * Status code returned by `uuidv7_generate()`, indicating that the `unix_ts_ms`
- * passed was used because it was greater than the previous one.
+ * Indicates that the `unix_ts_ms` passed was used because it was greater than
+ * the previous one.
  */
 #define UUIDV7_STATUS_NEW_TIMESTAMP (1)
 
 /**
- * Status code returned by `uuidv7_generate()`, indicating that the counter was
- * incremented because the `unix_ts_ms` passed was no greater than the previous
- * one.
+ * Indicates that the counter was incremented because the `unix_ts_ms` passed
+ * was no greater than the previous one.
  */
 #define UUIDV7_STATUS_COUNTER_INC (2)
 
 /**
- * Status code returned by `uuidv7_generate()`, indicating that the previous
- * `unix_ts_ms` was incremented because the counter reached its maximum value.
+ * Indicates that the previous `unix_ts_ms` was incremented because the counter
+ * reached its maximum value.
  */
 #define UUIDV7_STATUS_TIMESTAMP_INC (3)
 
 /**
- * Status code returned by `uuidv7_generate()`, indicating that the monotonic
- * order of generated UUIDs was broken because the `unix_ts_ms` passed was less
- * than the previous one by more than ten seconds.
+ * Indicates that the monotonic order of generated UUIDs was broken because the
+ * `unix_ts_ms` passed was less than the previous one by more than ten seconds.
  */
 #define UUIDV7_STATUS_CLOCK_ROLLBACK (4)
 
-/**
- * Status code returned by `uuidv7_generate()`, indicating that an invalid
- * `unix_ts_ms` is passed.
- */
+/** Indicates that an invalid `unix_ts_ms` is passed. */
 #define UUIDV7_STATUS_ERR_TIMESTAMP (-1)
+
+/**
+ * Indicates that the attempt to increment the previous `unix_ts_ms` failed
+ * because it had reached its maximum value.
+ */
+#define UUIDV7_STATUS_ERR_TIMESTAMP_OVERFLOW (-2)
 
 /** @} */
 
@@ -111,7 +112,10 @@ extern "C" {
 static inline int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
                                      const uint8_t *rand_bytes,
                                      const uint8_t *uuid_prev) {
-  if (unix_ts_ms > 0xffffffffffff) {
+  static const uint64_t MAX_TIMESTAMP = ((uint64_t)1 << 48) - 1;
+  static const uint64_t MAX_COUNTER = ((uint64_t)1 << 42) - 1;
+
+  if (unix_ts_ms > MAX_TIMESTAMP) {
     return UUIDV7_STATUS_ERR_TIMESTAMP;
   }
 
@@ -141,7 +145,7 @@ static inline int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
       counter = (counter << 8) | uuid_prev[10];
       counter = (counter << 8) | uuid_prev[11];
 
-      if (counter++ < 0x3ffffffffff) {
+      if (counter++ < MAX_COUNTER) {
         status = UUIDV7_STATUS_COUNTER_INC;
         uuid_out[6] = counter >> 38; // ver + bits 0-3
         uuid_out[7] = counter >> 30; // bits 4-11
@@ -153,6 +157,9 @@ static inline int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
         // increment prev timestamp at counter overflow
         status = UUIDV7_STATUS_TIMESTAMP_INC;
         timestamp++;
+        if (timestamp > MAX_TIMESTAMP) {
+          return UUIDV7_STATUS_ERR_TIMESTAMP_OVERFLOW;
+        }
       }
     }
   }
@@ -175,6 +182,18 @@ static inline int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
 }
 
 /**
+ * Determines the number of random bytes consumsed by `uuidv7_generate()` from
+ * the `UUIDV7_STATUS_*` code returned.
+ *
+ * @param status  `UUIDV7_STATUS_*` code returned by `uuidv7_generate()`.
+ * @return        `4` if `status` is `UUIDV7_STATUS_COUNTER_INC` or `10`
+ *                otherwise.
+ */
+static inline int uuidv7_status_n_rand_consumed(int8_t status) {
+  return status == UUIDV7_STATUS_COUNTER_INC ? 4 : 10;
+}
+
+/**
  * Encodes a UUID in the 8-4-4-4-12 hexadecimal string representation.
  *
  * @param uuid        16-byte byte array representing the UUID to encode.
@@ -192,18 +211,6 @@ static inline void uuidv7_to_string(const uint8_t *uuid, char *string_out) {
     }
   }
   *string_out = '\0';
-}
-
-/**
- * Determines the number of random bytes consumsed by `uuidv7_generate()` from
- * the `UUIDV7_STATUS_*` code returned.
- *
- * @param status  `UUIDV7_STATUS_*` code returned by `uuidv7_generate()`.
- * @return        `4` if `status` is `UUIDV7_STATUS_COUNTER_INC` or `10`
- *                otherwise.
- */
-static inline int uuidv7_status_n_rand_consumed(int8_t status) {
-  return status == UUIDV7_STATUS_COUNTER_INC ? 4 : 10;
 }
 
 /** @} */
@@ -231,7 +238,7 @@ static inline int uuidv7_status_n_rand_consumed(int8_t status) {
  *                  implementation-dependent code. Callers can usually ignore
  *                  the `UUIDV7_STATUS_*` code unless they need to guarantee the
  *                  monotonic order of UUIDs or fine-tune the generation
- *                  process. The implementation-dependent code should be out of
+ *                  process. The implementation-dependent code must be out of
  *                  the range of `int8_t` and negative if it reports an error.
  */
 int uuidv7_new(uint8_t *uuid_out);
