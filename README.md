@@ -105,6 +105,9 @@ static inline int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
                                      const uint8_t *uuid_prev);
 ```
 
+See [API reference](https://liosk.github.io/uuidv7-h/uuidv7_8h.html) for the
+full list of provided functions.
+
 ## Field and bit layout
 
 This implementation produces identifiers with the following bit layout:
