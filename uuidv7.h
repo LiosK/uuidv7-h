@@ -3,7 +3,7 @@
  *
  * uuidv7.h - Single-file C/C++ UUIDv7 Library
  *
- * @version   v0.1.3
+ * @version   v0.1.4
  * @author    LiosK
  * @copyright Licensed under the Apache License, Version 2.0
  * @see       https://github.com/LiosK/uuidv7-h
@@ -211,6 +211,45 @@ static inline void uuidv7_to_string(const uint8_t *uuid, char *string_out) {
     }
   }
   *string_out = '\0';
+}
+
+/**
+ * Decodes the 8-4-4-4-12 hexadecimal string representation of a UUID.
+ *
+ * @param string    37-byte (36 digits + NUL) character array representing the
+ *                  8-4-4-4-12 hexadecimal string representation.
+ * @param uuid_out  16-byte byte array where the decoded UUID is stored.
+ * @return          Zero on success or non-zero integer on failure.
+ */
+static inline int uuidv7_from_string(const char *string, uint8_t *uuid_out) {
+  for (int i = 0; i < 32; i++) {
+    char c = *string++;
+    // clang-format off
+    uint8_t x = c == '0' ?  0 : c == '1' ?  1 : c == '2' ?  2 : c == '3' ?  3
+              : c == '4' ?  4 : c == '5' ?  5 : c == '6' ?  6 : c == '7' ?  7
+              : c == '8' ?  8 : c == '9' ?  9 : c == 'a' ? 10 : c == 'b' ? 11
+              : c == 'c' ? 12 : c == 'd' ? 13 : c == 'e' ? 14 : c == 'f' ? 15
+              : c == 'A' ? 10 : c == 'B' ? 11 : c == 'C' ? 12 : c == 'D' ? 13
+              : c == 'E' ? 14 : c == 'F' ? 15 : 0xff;
+    // clang-format on
+    if (x == 0xff) {
+      return -1; // invalid digit
+    }
+
+    if ((i & 1) == 0) {
+      uuid_out[i >> 1] = x << 4; // even i => hi 4 bits
+    } else {
+      uuid_out[i >> 1] |= x; // odd i => lo 4 bits
+    }
+
+    if ((i == 7 || i == 11 || i == 15 || i == 19) && (*string++ != '-')) {
+      return -1; // invalid format
+    }
+  }
+  if (*string != '\0') {
+    return -1; // invalid length
+  }
+  return 0; // success
 }
 
 /** @} */

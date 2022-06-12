@@ -94,6 +94,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a2ca0e307eef1fd081784b3373aea347c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="uuidv7_8h.html#a2ca0e307eef1fd081784b3373aea347c">uuidv7_to_string</a> (const uint8_t *uuid, char *string_out)</td></tr>
 <tr class="memdesc:a2ca0e307eef1fd081784b3373aea347c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes a UUID in the 8-4-4-4-12 hexadecimal string representation.  <a href="uuidv7_8h.html#a2ca0e307eef1fd081784b3373aea347c">More...</a><br /></td></tr>
 <tr class="separator:a2ca0e307eef1fd081784b3373aea347c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99a1679219eb7b4d75025c165c54660f"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="uuidv7_8h.html#a99a1679219eb7b4d75025c165c54660f">uuidv7_from_string</a> (const char *string, uint8_t *uuid_out)</td></tr>
+<tr class="memdesc:a99a1679219eb7b4d75025c165c54660f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes the 8-4-4-4-12 hexadecimal string representation of a UUID.  <a href="uuidv7_8h.html#a99a1679219eb7b4d75025c165c54660f">More...</a><br /></td></tr>
+<tr class="separator:a99a1679219eb7b4d75025c165c54660f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">High-level APIs that require platform integration</div></td></tr>
 <tr class="memitem:ad517565053924e0a5c3d5c2513367aec"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="uuidv7_8h.html#ad517565053924e0a5c3d5c2513367aec">uuidv7_new</a> (uint8_t *uuid_out)</td></tr>
 <tr class="memdesc:ad517565053924e0a5c3d5c2513367aec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a new UUIDv7 with the current Unix time.  <a href="uuidv7_8h.html#ad517565053924e0a5c3d5c2513367aec">More...</a><br /></td></tr>
@@ -104,11 +107,57 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p ><a class="el" href="uuidv7_8h.html" title="uuidv7.h - Single-file C/C++ UUIDv7 Library">uuidv7.h</a> - Single-file C/C++ UUIDv7 Library </p>
-<dl class="section version"><dt>Version</dt><dd>v0.1.3 </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>v0.1.4 </dd></dl>
 <dl class="section author"><dt>Author</dt><dd>LiosK </dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>Licensed under the Apache License, Version 2.0 </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a href="https://github.com/LiosK/uuidv7-h">https://github.com/LiosK/uuidv7-h</a> </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="a99a1679219eb7b4d75025c165c54660f" name="a99a1679219eb7b4d75025c165c54660f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99a1679219eb7b4d75025c165c54660f">&#9670;&nbsp;</a></span>uuidv7_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int uuidv7_from_string </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>string</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>uuid_out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Decodes the 8-4-4-4-12 hexadecimal string representation of a UUID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">string</td><td>37-byte (36 digits + NUL) character array representing the 8-4-4-4-12 hexadecimal string representation. </td></tr>
+    <tr><td class="paramname">uuid_out</td><td>16-byte byte array where the decoded UUID is stored. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Zero on success or non-zero integer on failure. </dd></dl>
+
+</div>
+</div>
 <a id="a7619a7b93bd2a40c4e7697799f07a39e" name="a7619a7b93bd2a40c4e7697799f07a39e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7619a7b93bd2a40c4e7697799f07a39e">&#9670;&nbsp;</a></span>uuidv7_generate()</h2>
 

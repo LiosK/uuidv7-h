@@ -115,38 +115,29 @@ $(function() {
 <div class="ttc" id="auuidv7_8h_html_a7619a7b93bd2a40c4e7697799f07a39e"><div class="ttname"><a href="uuidv7_8h.html#a7619a7b93bd2a40c4e7697799f07a39e">uuidv7_generate</a></div><div class="ttdeci">static int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms, const uint8_t *rand_bytes, const uint8_t *uuid_prev)</div><div class="ttdoc">Generates a new UUIDv7 from the given Unix time, random bytes, and previous UUID.</div><div class="ttdef"><b>Definition:</b> uuidv7.h:112</div></div>
 <div class="ttc" id="auuidv7_8h_html_a904dabbb2b376b72eedc74ee1baea4bd"><div class="ttname"><a href="uuidv7_8h.html#a904dabbb2b376b72eedc74ee1baea4bd">UUIDV7_STATUS_CLOCK_ROLLBACK</a></div><div class="ttdeci">#define UUIDV7_STATUS_CLOCK_ROLLBACK</div><div class="ttdoc">Indicates that the monotonic order of generated UUIDs was broken because the unix_ts_ms passed was le...</div><div class="ttdef"><b>Definition:</b> uuidv7.h:66</div></div>
 <div class="ttc" id="auuidv7_8h_html_a91b305ffe9589108d0783a2f61803bc0"><div class="ttname"><a href="uuidv7_8h.html#a91b305ffe9589108d0783a2f61803bc0">uuidv7_status_n_rand_consumed</a></div><div class="ttdeci">static int uuidv7_status_n_rand_consumed(int8_t status)</div><div class="ttdoc">Determines the number of random bytes consumsed by uuidv7_generate() from the UUIDV7_STATUS_* code re...</div><div class="ttdef"><b>Definition:</b> uuidv7.h:192</div></div>
-<div class="ttc" id="auuidv7_8h_html_ac35dad098ce58a42318773ade92cee55"><div class="ttname"><a href="uuidv7_8h.html#ac35dad098ce58a42318773ade92cee55">uuidv7_new_string</a></div><div class="ttdeci">static int uuidv7_new_string(char *string_out)</div><div class="ttdoc">Generates an 8-4-4-4-12 hexadecimal string representation of new UUIDv7.</div><div class="ttdef"><b>Definition:</b> uuidv7.h:255</div></div>
+<div class="ttc" id="auuidv7_8h_html_ac35dad098ce58a42318773ade92cee55"><div class="ttname"><a href="uuidv7_8h.html#ac35dad098ce58a42318773ade92cee55">uuidv7_new_string</a></div><div class="ttdeci">static int uuidv7_new_string(char *string_out)</div><div class="ttdoc">Generates an 8-4-4-4-12 hexadecimal string representation of new UUIDv7.</div><div class="ttdef"><b>Definition:</b> uuidv7.h:294</div></div>
 <div class="ttc" id="auuidv7_8h_html_ad517565053924e0a5c3d5c2513367aec"><div class="ttname"><a href="uuidv7_8h.html#ad517565053924e0a5c3d5c2513367aec">uuidv7_new</a></div><div class="ttdeci">int uuidv7_new(uint8_t *uuid_out)</div><div class="ttdoc">Generates a new UUIDv7 with the current Unix time.</div></div>
 </div><!-- fragment --><p >See <a href="https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-03.html">draft-peabody-dispatch-new-uuid-format-03</a>.</p>
 <h1><a class="anchor" id="autotoc_md1"></a>
 Primary function</h1>
-<div class="fragment"><div class="line"><span class="comment">/**</span></div>
-<div class="line"><span class="comment"> * Generates a new UUIDv7 from the given Unix time, random bytes, and previous</span></div>
-<div class="line"><span class="comment"> * UUID.</span></div>
-<div class="line"><span class="comment"> *</span></div>
-<div class="line"><span class="comment"> * @param uuid_out    16-byte byte array where the generated UUID is stored.</span></div>
-<div class="line"><span class="comment"> * @param unix_ts_ms  Current Unix time in milliseconds.</span></div>
-<div class="line"><span class="comment"> * @param rand_bytes  At least 10-byte byte array filled with random bytes. This</span></div>
-<div class="line"><span class="comment"> *                    function consumes the leading 4 bytes or the whole 10</span></div>
-<div class="line"><span class="comment"> *                    bytes per call depending on the conditions.</span></div>
-<div class="line"><span class="comment"> *                    `uuidv7_status_n_rand_consumed()` maps the return value of</span></div>
-<div class="line"><span class="comment"> *                    this function to the number of random bytes consumed.</span></div>
-<div class="line"><span class="comment"> * @param uuid_prev   16-byte byte array representing the immediately preceding</span></div>
-<div class="line"><span class="comment"> *                    UUID, from which the previous timestamp and counter are</span></div>
-<div class="line"><span class="comment"> *                    extracted. This may be NULL if the caller does not care</span></div>
-<div class="line"><span class="comment"> *                    the ascending order of UUIDs within the same timestamp.</span></div>
-<div class="line"><span class="comment"> *                    This may point to the same location as `uuid_out`; this</span></div>
-<div class="line"><span class="comment"> *                    function reads the value before writing.</span></div>
-<div class="line"><span class="comment"> * @return            One of the `UUIDV7_STATUS_*` codes that describe the</span></div>
-<div class="line"><span class="comment"> *                    characteristics of generated UUIDs. Callers can usually</span></div>
-<div class="line"><span class="comment"> *                    ignore the status unless they need to guarantee the</span></div>
-<div class="line"><span class="comment"> *                    monotonic order of UUIDs or fine-tune the generation</span></div>
-<div class="line"><span class="comment"> *                    process.</span></div>
-<div class="line"><span class="comment"> */</span></div>
-<div class="line"><span class="keyword">static</span> <span class="keyword">inline</span> int8_t <a class="code hl_function" href="uuidv7_8h.html#a7619a7b93bd2a40c4e7697799f07a39e">uuidv7_generate</a>(uint8_t *uuid_out, uint64_t unix_ts_ms,</div>
+<div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keyword">inline</span> int8_t <a class="code hl_function" href="uuidv7_8h.html#a7619a7b93bd2a40c4e7697799f07a39e">uuidv7_generate</a>(uint8_t *uuid_out, uint64_t unix_ts_ms,</div>
 <div class="line">                                     <span class="keyword">const</span> uint8_t *rand_bytes,</div>
 <div class="line">                                     <span class="keyword">const</span> uint8_t *uuid_prev);</div>
-</div><!-- fragment --><p >See <a href="https://liosk.github.io/uuidv7-h/uuidv7_8h.html">API reference</a> for the full list of provided functions.</p>
+</div><!-- fragment --><p >Generates a new UUIDv7 from the given Unix time, random bytes, and previous UUID.</p>
+<ul>
+<li><b>Parameters:</b><ul>
+<li><code>uuid_out</code>: 16-byte byte array where the generated UUID is stored.</li>
+<li><code>unix_ts_ms</code>: Current Unix time in milliseconds.</li>
+<li><code>rand_bytes</code>: At least 10-byte byte array filled with random bytes. This function consumes the leading 4 bytes or the whole 10 bytes per call depending on the conditions. <code><a class="el" href="uuidv7_8h.html#a91b305ffe9589108d0783a2f61803bc0" title="Determines the number of random bytes consumsed by uuidv7_generate() from the UUIDV7_STATUS_* code re...">uuidv7_status_n_rand_consumed()</a></code> maps the return value of this function to the number of random bytes consumed.</li>
+<li><code>uuid_prev</code>: 16-byte byte array representing the immediately preceding UUID, from which the previous timestamp and counter are extracted. This may be NULL if the caller does not care the ascending order of UUIDs within the same timestamp. This may point to the same location as <code>uuid_out</code>; this function reads the value before writing.</li>
+</ul>
+</li>
+<li><b>Returns:</b><ul>
+<li>One of the <code>UUIDV7_STATUS_*</code> codes that describe the characteristics of generated UUIDs. Callers can usually ignore the status unless they need to guarantee the monotonic order of UUIDs or fine-tune the generation process.</li>
+</ul>
+</li>
+</ul>
+<p >See <a href="https://liosk.github.io/uuidv7-h/uuidv7_8h.html">API reference</a> for the full list of provided functions.</p>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Field and bit layout</h1>
 <p >This implementation produces identifiers with the following bit layout:</p>

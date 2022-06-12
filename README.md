@@ -77,33 +77,29 @@ See [draft-peabody-dispatch-new-uuid-format-03](https://www.ietf.org/archive/id/
 ## Primary function
 
 ```c
-/**
- * Generates a new UUIDv7 from the given Unix time, random bytes, and previous
- * UUID.
- *
- * @param uuid_out    16-byte byte array where the generated UUID is stored.
- * @param unix_ts_ms  Current Unix time in milliseconds.
- * @param rand_bytes  At least 10-byte byte array filled with random bytes. This
- *                    function consumes the leading 4 bytes or the whole 10
- *                    bytes per call depending on the conditions.
- *                    `uuidv7_status_n_rand_consumed()` maps the return value of
- *                    this function to the number of random bytes consumed.
- * @param uuid_prev   16-byte byte array representing the immediately preceding
- *                    UUID, from which the previous timestamp and counter are
- *                    extracted. This may be NULL if the caller does not care
- *                    the ascending order of UUIDs within the same timestamp.
- *                    This may point to the same location as `uuid_out`; this
- *                    function reads the value before writing.
- * @return            One of the `UUIDV7_STATUS_*` codes that describe the
- *                    characteristics of generated UUIDs. Callers can usually
- *                    ignore the status unless they need to guarantee the
- *                    monotonic order of UUIDs or fine-tune the generation
- *                    process.
- */
 static inline int8_t uuidv7_generate(uint8_t *uuid_out, uint64_t unix_ts_ms,
                                      const uint8_t *rand_bytes,
                                      const uint8_t *uuid_prev);
 ```
+
+Generates a new UUIDv7 from the given Unix time, random bytes, and previous UUID.
+
+- **Parameters:**
+  - `uuid_out`: 16-byte byte array where the generated UUID is stored.
+  - `unix_ts_ms`: Current Unix time in milliseconds.
+  - `rand_bytes`: At least 10-byte byte array filled with random bytes. This
+    function consumes the leading 4 bytes or the whole 10 bytes per call
+    depending on the conditions. `uuidv7_status_n_rand_consumed()` maps the
+    return value of this function to the number of random bytes consumed.
+  - `uuid_prev`: 16-byte byte array representing the immediately preceding UUID,
+    from which the previous timestamp and counter are extracted. This may be
+    NULL if the caller does not care the ascending order of UUIDs within the
+    same timestamp. This may point to the same location as `uuid_out`; this
+    function reads the value before writing.
+- **Returns:**
+  - One of the `UUIDV7_STATUS_*` codes that describe the characteristics of
+    generated UUIDs. Callers can usually ignore the status unless they need to
+    guarantee the monotonic order of UUIDs or fine-tune the generation process.
 
 See [API reference](https://liosk.github.io/uuidv7-h/uuidv7_8h.html) for the
 full list of provided functions.

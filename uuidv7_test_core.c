@@ -1,6 +1,7 @@
 #include "uuidv7.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -93,7 +94,7 @@ void test_with_prev(void) {
   }
 }
 
-void test_to_string(void) {
+void test_from_to_string(void) {
   struct TestCase {
     uint8_t bytes[16];
     char string[37];
@@ -110,24 +111,65 @@ void test_to_string(void) {
 
   struct TestCase *e = cases;
   for (int i = 0; i < n_cases; i++, e++) {
-    char buffer[37];
-    uuidv7_to_string(e->bytes, buffer);
-    assert(strcmp(buffer, e->string) == 0);
+    char string[37];
+    uuidv7_to_string(e->bytes, string);
+    assert(strcmp(string, e->string) == 0);
+
+    uint8_t uuid[16];
+    int err = uuidv7_from_string(e->string, uuid);
+    assert(err == 0);
+    assert(memcmp(uuid, e->bytes, 16) == 0);
+
+    for (int i = 0; e->string[i] != '\0'; i++) {
+      string[i] = toupper(e->string[i]);
+    }
+    string[36] = '\0';
+    err = uuidv7_from_string(string, uuid);
+    assert(err == 0);
+    assert(memcmp(uuid, e->bytes, 16) == 0);
   }
 }
 
-int main(void) {
+void test_from_string_error(void) {
+  char cases[][40] = {
+      "",
+      " 01815515-70af-73bb-a597-725c2086f131",
+      "01815515-70af-73bb-a597-725d90351474 ",
+      " 01815515-70af-73bb-a597-725eb688399d ",
+      "+01815515-70af-73bb-a597-725f825e57d7",
+      "-01815515-70af-73bb-a597-72602859e906",
+      "+1815515-70af-73bb-a597-7261115ae9fd",
+      "-1815515-70af-73bb-a597-7262c43b6483",
+      "0181551570af73bba5977263d33e981a",
+      "01815515_70af-73bb-a597-726461ccf7f4",
+      "01815515-70af 73bb-a597-726523b5414d",
+      "01815515-70af-73bb-a597-7266_8e4c2c3",
+      "0181-515-70af-73bb-a597-726778070225",
+      "01815515-70af-7 bb-a597-726849072769",
+      "0181g515-70af-73bb-a597-72699ab58e63",
+      "01815515-70af-73bb-a597-726ladf25973",
+      "01815515-70af-73zb-a597-726b873b50aa",
+  };
+  const int n_cases = sizeof(cases) / sizeof(cases[0]);
+
+  for (int i = 0; i < n_cases; i++) {
+    uint8_t uuid[16];
+    int err = uuidv7_from_string(cases[i], uuid);
+    assert(err != 0);
+  }
+}
+
 #ifndef NDEBUG
+int main(void) {
   test_unprecedented();
   fprintf(stderr, "  %s: ok\n", "test_unprecedented");
   test_with_prev();
   fprintf(stderr, "  %s: ok\n", "test_with_prev");
-  test_to_string();
-  fprintf(stderr, "  %s: ok\n", "test_to_string");
+  test_from_to_string();
+  fprintf(stderr, "  %s: ok\n", "test_from_to_string");
+  test_from_string_error();
+  fprintf(stderr, "  %s: ok\n", "test_from_string_error");
 
   return 0;
-#else
-  fprintf(stderr, "error: NDEBUG must be unset\n");
-  return 1;
-#endif
 }
+#endif
