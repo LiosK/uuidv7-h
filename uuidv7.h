@@ -3,7 +3,7 @@
  *
  * uuidv7.h - Single-file C/C++ UUIDv7 Library
  *
- * @version   v0.1.4
+ * @version   v0.1.5
  * @author    LiosK
  * @copyright Licensed under the Apache License, Version 2.0
  * @see       https://github.com/LiosK/uuidv7-h
