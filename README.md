@@ -72,7 +72,7 @@ int uuidv7_new(uint8_t *uuid_out) {
 }
 ```
 
-See [draft-peabody-dispatch-new-uuid-format-04](https://www.ietf.org/archive/id/draft-peabody-dispatch-new-uuid-format-04.html).
+See [draft-ietf-uuidrev-rfc4122bis-00](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-00.html).
 
 ## Primary function
 
