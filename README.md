@@ -5,9 +5,9 @@ Examples:
 ```c
 #include "uuidv7.h"
 
+#include <pthread.h>
 #include <stdio.h>
 #include <sys/random.h>
-#include <time.h>
 
 int main(void) {
   // use high-level APIs that require concrete `uuidv7_new()` implementation
@@ -50,24 +50,24 @@ int main(void) {
  * `uuidv7.h` provides the primitive `uuidv7_generate()` function only. Users
  * have to integrate a real-time clock, cryptographically strong random number
  * generator, and shared state storage available in the target platform.
- *
- * @warning This example uses static variables and is NOT thread-safe.
  */
 int uuidv7_new(uint8_t *uuid_out) {
+  static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
   static uint8_t uuid_prev[16] = {0};
-  static uint8_t rand_bytes[10] = {0};
-  static int n_rand_consumed = 10;
 
   struct timespec tp;
   clock_gettime(CLOCK_REALTIME, &tp);
   uint64_t unix_ts_ms = (uint64_t)tp.tv_sec * 1000 + tp.tv_nsec / 1000000;
 
-  getentropy(rand_bytes, n_rand_consumed);
-  int8_t status = uuidv7_generate(uuid_prev, unix_ts_ms, rand_bytes, uuid_prev);
-  n_rand_consumed = uuidv7_status_n_rand_consumed(status);
+  uint8_t rand_bytes[10];
+  getentropy(rand_bytes, 10);
 
+  pthread_mutex_lock(&lock);
+  int8_t status = uuidv7_generate(uuid_prev, unix_ts_ms, rand_bytes, uuid_prev);
   for (int i = 0; i < 16; i++)
     uuid_out[i] = uuid_prev[i];
+  pthread_mutex_unlock(&lock);
+
   return status;
 }
 ```
