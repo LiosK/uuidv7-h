@@ -14,7 +14,7 @@ int main(void) {
   char text[37];
   for (int i = 0; i < 8; i++) {
     uuidv7_new_string(text);
-    printf("%s\n", text);
+    puts(text);
   }
 
   // generate a UUIDv7 with the current Unix time using the low-level APIs
@@ -28,7 +28,7 @@ int main(void) {
   uint8_t uuid[16];
   uuidv7_generate(uuid, unix_ts_ms, rand_bytes, NULL);
   uuidv7_to_string(uuid, text);
-  printf("%s\n", text);
+  puts(text);
 
   // generate another while guaranteeing ascending order of UUIDs
   clock_gettime(CLOCK_REALTIME, &tp);
@@ -39,7 +39,7 @@ int main(void) {
   if (status == UUIDV7_STATUS_CLOCK_ROLLBACK)
     return 1; // error: clock moved backward by more than 10 seconds
   uuidv7_to_string(uuid, text);
-  printf("%s\n", text);
+  puts(text);
 
   return 0; // success
 }
@@ -127,22 +127,27 @@ Where:
 - The 48-bit `unix_ts_ms` field is dedicated to the Unix timestamp in
   milliseconds.
 - The 4-bit `ver` field is set at `0111`.
-- The 42-bit `counter` field accommodates the sequence counter that ensures the
-  monotonic order of IDs generated within the same millisecond. The counter is
-  incremented by one for each new ID generated within the same timestamp and is
-  randomly initialized whenever the `unix_ts_ms` changes. The `counter` is
-  filled with a random number if `NULL` is passed as `uuid_prev` parameter.
+- The 42-bit `counter` field accommodates a counter that ensures the increasing
+  order of IDs generated within a millisecond. The counter is incremented by one
+  for each new ID and is reset to a random number when the `unix_ts_ms` changes.
 - The 2-bit `var` field is set at `10`.
 - The remaining 32 `rand` bits are filled with a random number.
 
-In the rare circumstances where the 42-bit `counter` field reaches its maximum
-value, this library increments the `unix_ts_ms` ahead of the actual time;
-therefore, the `unix_ts_ms` may have a larger value than that of the real-time
-clock. This library goes on with such larger `unix_ts_ms` values caused by
-counter overflows and system clock rollbacks as long as the difference from the
-system clock is small enough. If the system clock moves back by more than ten
-seconds, this library ignores the timestamp and counter embedded in the
-`uuid_prev` and thus breaks the monotonic order of generated identifiers.
+The 42-bit `counter` is sufficiently large, so you do not usually need to worry
+about overflow, but in an extremely rare circumstance where it overflows, this
+library increments the `unix_ts_ms` field to continue instant monotonic
+generation. As a result, the generated ID may have a greater `unix_ts_ms` value
+than that passed as the argument. (See also [Why so large counter? (42bits)]).
+
+UUIDv7, by design, relies on the system clock to guarantee the monotonically
+increasing order of generated IDs. A generator may not be able to produce a
+monotonic sequence if the system clock goes backwards. This library ignores a
+rollback of provided `unix_ts_ms` and reuses the one in `uuid_prev` unless the
+rollback is considered significant (namely, more than ten seconds). If such a
+significant rollback takes place, this library ignores the `uuid_prev` argument
+and thus breaks the increasing order of generated IDs.
+
+[Why so large counter? (42bits)]: https://github.com/LiosK/uuidv7/issues/13#issuecomment-2306922356
 
 ## License
 
