@@ -69,7 +69,7 @@ $(function(){ initResizable(false); });
 <div class="line">  <span class="keywordtype">char</span> text[37];</div>
 <div class="line">  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 8; i++) {</div>
 <div class="line">    <a class="code hl_function" href="uuidv7_8h.html#ac35dad098ce58a42318773ade92cee55">uuidv7_new_string</a>(text);</div>
-<div class="line">    printf(<span class="stringliteral">&quot;%s\n&quot;</span>, text);</div>
+<div class="line">    puts(text);</div>
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// generate a UUIDv7 with the current Unix time using the low-level APIs</span></div>
@@ -83,7 +83,7 @@ $(function(){ initResizable(false); });
 <div class="line">  uint8_t uuid[16];</div>
 <div class="line">  <a class="code hl_function" href="uuidv7_8h.html#a7619a7b93bd2a40c4e7697799f07a39e">uuidv7_generate</a>(uuid, unix_ts_ms, rand_bytes, NULL);</div>
 <div class="line">  <a class="code hl_function" href="uuidv7_8h.html#a2ca0e307eef1fd081784b3373aea347c">uuidv7_to_string</a>(uuid, text);</div>
-<div class="line">  printf(<span class="stringliteral">&quot;%s\n&quot;</span>, text);</div>
+<div class="line">  puts(text);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// generate another while guaranteeing ascending order of UUIDs</span></div>
 <div class="line">  clock_gettime(CLOCK_REALTIME, &amp;tp);</div>
@@ -94,7 +94,7 @@ $(function(){ initResizable(false); });
 <div class="line">  <span class="keywordflow">if</span> (status == <a class="code hl_define" href="uuidv7_8h.html#a904dabbb2b376b72eedc74ee1baea4bd">UUIDV7_STATUS_CLOCK_ROLLBACK</a>)</div>
 <div class="line">    <span class="keywordflow">return</span> 1; <span class="comment">// error: clock moved backward by more than 10 seconds</span></div>
 <div class="line">  <a class="code hl_function" href="uuidv7_8h.html#a2ca0e307eef1fd081784b3373aea347c">uuidv7_to_string</a>(uuid, text);</div>
-<div class="line">  printf(<span class="stringliteral">&quot;%s\n&quot;</span>, text);</div>
+<div class="line">  puts(text);</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">return</span> 0; <span class="comment">// success</span></div>
 <div class="line">}</div>
@@ -171,11 +171,12 @@ Field and bit layout</h1>
 <ul>
 <li>The 48-bit <code>unix_ts_ms</code> field is dedicated to the Unix timestamp in milliseconds.</li>
 <li>The 4-bit <code>ver</code> field is set at <code>0111</code>.</li>
-<li>The 42-bit <code>counter</code> field accommodates the sequence counter that ensures the monotonic order of IDs generated within the same millisecond. The counter is incremented by one for each new ID generated within the same timestamp and is randomly initialized whenever the <code>unix_ts_ms</code> changes. The <code>counter</code> is filled with a random number if <code>NULL</code> is passed as <code>uuid_prev</code> parameter.</li>
+<li>The 42-bit <code>counter</code> field accommodates a counter that ensures the increasing order of IDs generated within a millisecond. The counter is incremented by one for each new ID and is reset to a random number when the <code>unix_ts_ms</code> changes.</li>
 <li>The 2-bit <code>var</code> field is set at <code>10</code>.</li>
 <li>The remaining 32 <code>rand</code> bits are filled with a random number.</li>
 </ul>
-<p>In the rare circumstances where the 42-bit <code>counter</code> field reaches its maximum value, this library increments the <code>unix_ts_ms</code> ahead of the actual time; therefore, the <code>unix_ts_ms</code> may have a larger value than that of the real-time clock. This library goes on with such larger <code>unix_ts_ms</code> values caused by counter overflows and system clock rollbacks as long as the difference from the system clock is small enough. If the system clock moves back by more than ten seconds, this library ignores the timestamp and counter embedded in the <code>uuid_prev</code> and thus breaks the monotonic order of generated identifiers.</p>
+<p>The 42-bit <code>counter</code> is sufficiently large, so you do not usually need to worry about overflow, but in an extremely rare circumstance where it overflows, this library increments the <code>unix_ts_ms</code> field to continue instant monotonic generation. As a result, the generated ID may have a greater <code>unix_ts_ms</code> value than that passed as the argument. (See also <a href="https://github.com/LiosK/uuidv7/issues/13#issuecomment-2306922356">Why so large counter? (42bits)</a>).</p>
+<p>UUIDv7, by design, relies on the system clock to guarantee the monotonically increasing order of generated IDs. A generator may not be able to produce a monotonic sequence if the system clock goes backwards. This library ignores a rollback of provided <code>unix_ts_ms</code> and reuses the one in <code>uuid_prev</code> unless the rollback is considered significant (namely, more than ten seconds). If such a significant rollback takes place, this library ignores the <code>uuid_prev</code> argument and thus breaks the increasing order of generated IDs.</p>
 <h1><a class="anchor" id="autotoc_md3"></a>
 License</h1>
 <p>Licensed under the Apache License, Version 2.0. </p>
