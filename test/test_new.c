@@ -1,6 +1,7 @@
 #include "uuidv7.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -50,6 +51,35 @@ void test_timestamp_and_counter(void) {
   }
 }
 
+void test_constant_and_random_bits(void) {
+  // count '1' of each bit
+  uint32_t bins[128] = {0};
+  for (int i = 0; i < N_SAMPLES; i++) {
+    uint8_t uuid[16];
+    uuidv7_from_string(samples[i], uuid);
+    for (int j = 0; j < 16; j++) {
+      for (int k = 7; k >= 0; k--) {
+        bins[j * 8 + k] += uuid[j] & 1;
+        uuid[j] >>= 1;
+      }
+    }
+  }
+
+  // test if constant bits are all set to 1 or 0
+  assert(bins[48] == 0);         // version bit 48
+  assert(bins[49] == N_SAMPLES); // version bit 49
+  assert(bins[50] == N_SAMPLES); // version bit 50
+  assert(bins[51] == N_SAMPLES); // version bit 51
+  assert(bins[64] == N_SAMPLES); // variant bit 64
+  assert(bins[65] == 0);         // variant bit 65
+
+  // test if random bits are set to 1 at ~50% probability
+  // set margin based on binom dist 99.999% confidence interval
+  double margin = 4.417173 * sqrt(0.5 * 0.5 / (double)N_SAMPLES);
+  for (int i = 96; i < 128; i++)
+    assert(fabs((double)bins[i] / (double)N_SAMPLES - 0.5) < margin);
+}
+
 #ifndef NDEBUG
 int main(void) {
   setup();
@@ -60,6 +90,8 @@ int main(void) {
   fprintf(stderr, "  %s: ok\n", "test_order");
   test_timestamp_and_counter();
   fprintf(stderr, "  %s: ok\n", "test_timestamp_and_counter");
+  test_constant_and_random_bits();
+  fprintf(stderr, "  %s: ok\n", "test_constant_and_random_bits");
 
   return 0;
 }
